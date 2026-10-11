@@ -1,0 +1,54 @@
+# ==========================================
+# Root .gitignore for RentSmart Ecosystem
+# ==========================================
+
+# 1. Environment & Sensitive Config
+.env
+.env.backup
+.env.production
+*.env
+local.properties
+
+# 2. Dependencies
+**/vendor/
+**/node_modules/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# 3. Python & Virtual Environments
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/.venv/
+**/venv/
+**/env/
+**/.pytest_cache/
+
+# 4. Storage, Cache & Logs
+**/storage/framework/cache/*
+**/storage/framework/sessions/*
+**/storage/framework/views/*
+**/storage/logs/*.log
+!**/storage/framework/cache/.gitignore
+!**/storage/framework/sessions/.gitignore
+!**/storage/framework/views/.gitignore
+!**/storage/logs/.gitignore
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 5. Mobile & Android Build Artifacts
+**/build/
+**/.gradle/
+**/android/.gradle/
+**/android/app/build/
+**/android/local.properties
+
+# 6. IDE & Operating System Files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
