@@ -397,6 +397,11 @@ document.addEventListener('show-chutro', function(e) {
              class="micro-press px-2.5 py-1 rounded-lg bg-[#F0FDFA] dark:bg-[#1E2320] hover:bg-[#0D9488] hover:text-white text-[#0D9488] dark:text-[#5EEAD4] font-medium border border-[#CCFBF1] dark:border-slate-700 transition-all duration-200 hover:-translate-y-0.5">
             Dưới 3.0 triệu
           </a>
+          <a href="{{ route('listing', ['mode' => 'ai']) }}"
+             class="micro-press sm:ml-auto px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500/15 to-amber-600/15 hover:from-amber-600 hover:to-amber-700 hover:text-white text-amber-900 dark:text-amber-200 font-bold border border-amber-300/80 dark:border-amber-700/60 transition-all duration-200 flex items-center gap-1.5 shadow-2xs">
+            <i class="ri-sparkling-fill text-amber-500"></i>
+            <span>AI Gợi ý phòng</span>
+          </a>
         </div>
       </div>
     </div>
