@@ -61,106 +61,7 @@
   $recListJson = json_encode($recListItems, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
 @endphp
 
-<div x-data="{
-       openAiModal: {{ (request('mode') === 'ai' && empty($recommendations) && !$recommend_no_match) ? 'true' : 'false' }},
-       openCompareModal: false,
-       aiPersona: 'student',
-       aiBudget: {{ intval(old('budget', $recommend_payload['budget'] ?? request('budget', request('max', 3500000)))) }},
-       aiArea: {{ intval(old('area', $recommend_payload['area'] ?? request('area', 22))) }},
-       aiPeople: {{ intval(old('people', $recommend_payload['people'] ?? request('people', 1))) }},
-       aiStrictBudget: {{ (old('strict_budget', $recommend_payload['strict_budget'] ?? true) ? true : false) ? 'true' : 'false' }},
-       aiStrictLocation: {{ (old('strict_location', $recommend_payload['strict_location'] ?? false) ? true : false) ? 'true' : 'false' }},
-       aiDistrict: '{{ old('dia_chi', $recommend_payload['dia_chi'] ?? request('dia_chi', '')) }}',
-       aiServices: '{{ old('dich_vu_id', is_array($recommend_payload['dich_vu_id'] ?? null) ? implode(',', $recommend_payload['dich_vu_id']) : request('dich_vu_id', '1,2,3')) }}',
-       aiIsLoading: false,
-       recommendationsData: {!! $recListJson !!},
-       compareList: {!! !empty($recommendations) ? $recListJson : '[]' !!},
-
-       setPersona(p) {
-         this.aiPersona = p;
-         if (p === 'student') {
-           this.aiBudget = 2200000;
-           this.aiArea = 18;
-           this.aiPeople = 1;
-           this.aiStrictBudget = true;
-           this.aiServices = '1,3';
-           this.aiDistrict = 'Thủ Đức';
-         } else if (p === 'worker') {
-           this.aiBudget = 4000000;
-           this.aiArea = 28;
-           this.aiPeople = 1;
-           this.aiStrictBudget = true;
-           this.aiServices = '1,2,3,4';
-           this.aiDistrict = 'Bình Thạnh';
-         } else if (p === 'roommates') {
-           this.aiBudget = 3500000;
-           this.aiArea = 32;
-           this.aiPeople = 2;
-           this.aiStrictBudget = true;
-           this.aiServices = '1,2,5';
-           this.aiDistrict = 'Quận 10';
-         } else if (p === 'serviced') {
-           this.aiBudget = 5500000;
-           this.aiArea = 35;
-           this.aiPeople = 1;
-           this.aiStrictBudget = false;
-           this.aiServices = '1,2,3,4,8,10';
-           this.aiDistrict = 'Tân Bình';
-         }
-       },
-
-       resetForm() {
-         this.aiPersona = 'student';
-         this.aiBudget = 3500000;
-         this.aiArea = 22;
-         this.aiPeople = 1;
-         this.aiStrictBudget = true;
-         this.aiStrictLocation = false;
-         this.aiDistrict = '';
-         this.aiServices = '1,2,3';
-       },
-
-       hasService(id) {
-         const arr = String(this.aiServices).split(',').map(s => s.trim());
-         return arr.includes(String(id));
-       },
-
-       toggleService(id) {
-         let arr = this.aiServices ? String(this.aiServices).split(',').map(s => s.trim()).filter(Boolean) : [];
-         const strId = String(id);
-         if (arr.includes(strId)) {
-           arr = arr.filter(x => x !== strId);
-         } else {
-           arr.push(strId);
-         }
-         this.aiServices = arr.join(',');
-       },
-
-       toggleCompare(room) {
-         const idx = this.compareList.findIndex(r => r.id === room.id);
-         if (idx >= 0) {
-           this.compareList.splice(idx, 1);
-         } else {
-           if (this.compareList.length >= 3) {
-             alert('Bạn chỉ có thể so sánh tối đa 3 phòng cùng lúc.');
-             return;
-           }
-           this.compareList.push(room);
-         }
-       },
-
-       isInCompare(id) {
-         return this.compareList.some(r => r.id === id);
-       },
-
-       removeFromCompare(id) {
-         this.compareList = this.compareList.filter(r => r.id !== id);
-       },
-
-       formatMoney(num) {
-         return new Intl.NumberFormat('vi-VN').format(num) + ' ₫';
-       }
-     }">
+<div x-data="listingPage()">
 
   {{-- ============================================================ --}}
   {{-- 🎛️ 1. THANH BỘ LỌC THƯƠNG MẠI CỐ ĐỊNH (COMMERCIAL CONTROL BAR) --}}
@@ -269,7 +170,7 @@
         <button type="button" @click="openAiModal = true"
           class="w-full lg:w-auto px-3.5 py-2 rounded-lg bg-[#FAF9F6] dark:bg-[#202522] hover:bg-[#EAE8E1] dark:hover:bg-[#29302B] text-[#1B3D2F] dark:text-[#A3B899] font-semibold text-xs sm:text-sm border border-[#D8D4CA] dark:border-[#353C37] transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer whitespace-nowrap">
           <i class="ri-sparkling-fill text-[#A6824D] text-sm"></i>
-          <span>AI Tư Vấn Nhu Cầu</span>
+          <span>AI Gợi ý phòng</span>
         </button>
 
       </div>
@@ -704,7 +605,7 @@
             Không tìm thấy phòng trọ khớp với tiêu chí lựa chọn
           </h3>
           <p class="text-[#70746F] dark:text-stone-400 text-xs sm:text-sm max-w-md mx-auto mb-6">
-            Quý khách có thể thử mở rộng khoảng giá, thay đổi khu vực tìm kiếm hoặc sử dụng tính năng AI Tư Vấn Nhu Cầu.
+            Quý khách có thể thử mở rộng khoảng giá, thay đổi khu vực tìm kiếm hoặc sử dụng tính năng AI Gợi ý phòng.
           </p>
           <div class="flex flex-wrap items-center justify-center gap-3">
             <a href="{{ route('listing') }}"
@@ -714,7 +615,7 @@
             <button type="button" @click="openAiModal = true"
               class="px-4 py-2 rounded-lg bg-[#1B3D2F] hover:bg-[#142F24] text-white font-semibold text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer">
               <i class="ri-sparkling-fill text-[#A6824D]"></i>
-              <span>Nhờ AI Tư Vấn Nhu Cầu</span>
+              <span>Nhờ AI Gợi ý phòng</span>
             </button>
           </div>
         </div>
@@ -874,6 +775,7 @@
   </section>
 
   {{-- 🤖 POPUP MODAL: TƯ VẤN & GỢI Ý PHÒNG TỐI ƯU (DQN MODEL CONSULTANT) --}}
+  <template x-teleport="body">
   <div x-show="openAiModal" style="display: none;"
     class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#121514]/75 backdrop-blur-xs"
     x-transition:enter="transition ease-out duration-200"
@@ -1157,8 +1059,10 @@
       </form>
     </div>
   </div>
+  </template>
 
   {{-- 📊 POPUP MODAL: SO SÁNH 3 PHÒNG ĐỀ XUẤT (DECISION SUPPORT COMPARISON TABLE) --}}
+  <template x-teleport="body">
   <div x-show="openCompareModal" style="display: none;"
     class="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-[#121514]/80 backdrop-blur-xs"
     x-transition:enter="transition ease-out duration-200"
@@ -1334,10 +1238,115 @@
       </div>
     </div>
   </div>
+  </template>
 
 </div>
 
 <script>
+function listingPage() {
+  const recommendationsData = {!! $recListJson !!};
+  return {
+    openAiModal: {{ (request('mode') === 'ai' && empty($recommendations) && !$recommend_no_match) ? 'true' : 'false' }},
+    openCompareModal: false,
+    aiPersona: 'student',
+    aiBudget: {{ intval(old('budget', $recommend_payload['budget'] ?? request('budget', request('max', 3500000)))) }},
+    aiArea: {{ intval(old('area', $recommend_payload['area'] ?? request('area', 22))) }},
+    aiPeople: {{ intval(old('people', $recommend_payload['people'] ?? request('people', 1))) }},
+    aiStrictBudget: {{ (old('strict_budget', $recommend_payload['strict_budget'] ?? true) ? true : false) ? 'true' : 'false' }},
+    aiStrictLocation: {{ (old('strict_location', $recommend_payload['strict_location'] ?? false) ? true : false) ? 'true' : 'false' }},
+    aiDistrict: {!! json_encode(old('dia_chi', $recommend_payload['dia_chi'] ?? request('dia_chi', ''))) !!},
+    aiServices: {!! json_encode(old('dich_vu_id', is_array($recommend_payload['dich_vu_id'] ?? null) ? implode(',', $recommend_payload['dich_vu_id']) : request('dich_vu_id', '1,2,3'))) !!},
+    aiIsLoading: false,
+    recommendationsData: recommendationsData,
+    compareList: {!! !empty($recommendations) ? 'recommendationsData' : '[]' !!},
+
+    setPersona(p) {
+      this.aiPersona = p;
+      if (p === 'student') {
+        this.aiBudget = 2200000;
+        this.aiArea = 18;
+        this.aiPeople = 1;
+        this.aiStrictBudget = true;
+        this.aiServices = '1,3';
+        this.aiDistrict = 'Thủ Đức';
+      } else if (p === 'worker') {
+        this.aiBudget = 4000000;
+        this.aiArea = 28;
+        this.aiPeople = 1;
+        this.aiStrictBudget = true;
+        this.aiServices = '1,2,3,4';
+        this.aiDistrict = 'Bình Thạnh';
+      } else if (p === 'roommates') {
+        this.aiBudget = 3500000;
+        this.aiArea = 32;
+        this.aiPeople = 2;
+        this.aiStrictBudget = true;
+        this.aiServices = '1,2,5';
+        this.aiDistrict = 'Quận 10';
+      } else if (p === 'serviced') {
+        this.aiBudget = 5500000;
+        this.aiArea = 35;
+        this.aiPeople = 1;
+        this.aiStrictBudget = false;
+        this.aiServices = '1,2,3,4,8,10';
+        this.aiDistrict = 'Tân Bình';
+      }
+    },
+
+    resetForm() {
+      this.aiPersona = 'student';
+      this.aiBudget = 3500000;
+      this.aiArea = 22;
+      this.aiPeople = 1;
+      this.aiStrictBudget = true;
+      this.aiStrictLocation = false;
+      this.aiDistrict = '';
+      this.aiServices = '1,2,3';
+    },
+
+    hasService(id) {
+      const arr = String(this.aiServices).split(',').map(s => s.trim());
+      return arr.includes(String(id));
+    },
+
+    toggleService(id) {
+      let arr = this.aiServices ? String(this.aiServices).split(',').map(s => s.trim()).filter(Boolean) : [];
+      const strId = String(id);
+      if (arr.includes(strId)) {
+        arr = arr.filter(x => x !== strId);
+      } else {
+        arr.push(strId);
+      }
+      this.aiServices = arr.join(',');
+    },
+
+    toggleCompare(room) {
+      const idx = this.compareList.findIndex(r => r.id === room.id);
+      if (idx >= 0) {
+        this.compareList.splice(idx, 1);
+      } else {
+        if (this.compareList.length >= 3) {
+          alert('Bạn chỉ có thể so sánh tối đa 3 phòng cùng lúc.');
+          return;
+        }
+        this.compareList.push(room);
+      }
+    },
+
+    isInCompare(id) {
+      return this.compareList.some(r => r.id === id);
+    },
+
+    removeFromCompare(id) {
+      this.compareList = this.compareList.filter(r => r.id !== id);
+    },
+
+    formatMoney(num) {
+      return new Intl.NumberFormat('vi-VN').format(num) + ' ₫';
+    }
+  };
+}
+
 function areaDropdownComponent() {
   return {
     openAreaDropdown: false,

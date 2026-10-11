@@ -94,7 +94,7 @@
     }
     @keyframes pageEnterFade {
       from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
+      to { opacity: 1; transform: none; }
     }
 
     /* 🌟 Progressive Scroll-Triggered Reveal System */
@@ -466,12 +466,6 @@
             Căn hộ Studio
           </a>
 
-          <a href="{{ route('listing', ['mode' => 'ai']) }}"
-            class="px-2.5 py-1.5 xl:px-3 xl:py-2 rounded-lg text-xs xl:text-sm font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5 {{ request('mode') === 'ai' ? 'bg-[#FAF6EE] dark:bg-[#2A241B] text-[#A6824D] dark:text-[#E8D7B8] font-bold border border-[#E5DAC0] dark:border-[#524430]' : 'text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 hover:bg-amber-50/70 dark:hover:bg-amber-950/30' }}">
-            <i class="ri-sparkling-fill text-amber-500 animate-pulse"></i>
-            <span>AI Gợi ý phòng</span>
-          </a>
-
           <a href="{{ route('home') }}#community"
             class="px-2.5 py-1.5 xl:px-3 xl:py-2 rounded-lg text-xs xl:text-sm font-semibold transition-colors whitespace-nowrap text-[#64748B] dark:text-stone-300 hover:text-[#172B3A] dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-stone-800/50">
             Cẩm nang<span class="hidden 2xl:inline"> thuê trọ</span>
@@ -608,9 +602,6 @@
         </a>
         <a href="{{ route('listing', ['category' => 'studio']) }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800">
           <i class="ri-building-line text-stone-500"></i> Căn hộ Studio
-        </a>
-        <a href="{{ route('listing', ['mode' => 'ai']) }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40">
-          <i class="ri-sparkling-fill text-amber-500"></i> AI Gợi ý phòng
         </a>
         <a href="{{ route('home') }}#community" class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800">
           <i class="ri-article-line text-stone-500"></i> Cẩm nang thuê trọ
@@ -875,7 +866,6 @@
   @endif
 
 
-  <script src="//unpkg.com/alpinejs" defer></script>
   <script>
     window.API_URL = "{{ env('API_URL', 'http://127.0.0.1:8000/api') }}";
     console.log('✅ API_URL =', window.API_URL);
