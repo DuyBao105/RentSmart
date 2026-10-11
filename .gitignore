@@ -52,3 +52,6 @@ yarn-error.log*
 *.swo
 .DS_Store
 Thumbs.db
+
+# 7. Local database dumps
+nha_tro_dump_direct.sql

@@ -1,4 +1,4 @@
-﻿-- phpMyAdmin SQL Dump
+-- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
@@ -1748,7 +1748,7 @@ ALTER TABLE `bai_dang`
   ADD KEY `idx_baidang_trangthai_gia` (`trang_thai`,`gia_niem_yet`),
   ADD KEY `idx_baidang_phong` (`phong_id`),
   ADD KEY `idx_baidang_nguoidung` (`nguoi_dung_id`);
-ALTER TABLE `bai_dang` ADD FULLTEXT KEY `ft_baidang_title_desc` (`tieu_de`,`mo_ta`);
+-- ALTER TABLE `bai_dang` ADD FULLTEXT KEY `ft_baidang_title_desc` (`tieu_de`,`mo_ta`);
 
 --
 -- Chá»‰ má»¥c cho báº£ng `chi_so`

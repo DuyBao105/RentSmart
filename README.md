@@ -1,6 +1,12 @@
 # 🏠 RentSmart — Hệ Thống Quản Lý Nhà Trọ Thông Minh & Gợi Ý Phòng Bằng Reinforcement Learning
 
 <p align="center">
+  <a href="https://rentsmart-3jpu.onrender.com" target="_blank">
+    <img src="https://img.shields.io/badge/🚀_LIVE_DEMO-rentsmart--3jpu.onrender.com-success?style=for-the-badge&logo=render&logoColor=white" alt="Live Demo" />
+  </a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel" />
   <img src="https://img.shields.io/badge/PHP-8.3-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP" />
   <img src="https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
