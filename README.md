@@ -173,11 +173,10 @@ php artisan serve --port=8001
 
 ## 👨‍💻 Tác Giả & Liên Hệ (Author)
 
-- **Họ và tên:** *[Tên của bạn]*
+- **Họ và tên:** *Duy Bao*
 - **Chuyên ngành:** Kỹ thuật Phần mềm / Công nghệ Thông tin
-- **Email:** *[email_cua_ban@example.com]*
-- **LinkedIn:** *[https://linkedin.com/in/your-profile]*
-- **GitHub:** *[https://github.com/your-username]*
+- **Email:** *baotranduy666666@gmail.com*
+
 
 ---
 
