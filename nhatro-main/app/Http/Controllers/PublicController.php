@@ -305,7 +305,17 @@ class PublicController extends Controller
                 $showRecommendationsOnly = !empty($recommendations);
             }
             $apiParams = $request->only('min', 'max', 'page', 'dia_chi', 'area', 'search', 'category', 'district', 'sort');
-            $response = $this->api->get('bai-dang', $apiParams);
+            
+            $response = null;
+            try {
+                $response = $this->api->get('bai-dang', $apiParams);
+            } catch (\Throwable $apiEx) {
+                Log::debug('ApiClient /bai-dang không khả dụng, sử dụng Direct Database: ' . $apiEx->getMessage());
+            }
+
+            if (!isset($response['status']) || !$response['status'] || empty($response['data'])) {
+                $response = $this->queryDirectListings($request);
+            }
 
             // Tiêu đề bộ lọc thân thiện hiển thị cho người dùng
             $filterParts = [];
@@ -355,7 +365,7 @@ class PublicController extends Controller
             $services = $this->loadServicesForPicker();
 
             if (!isset($response['status']) || !$response['status']) {
-                Log::warning('⚠️ API /bai-dang trả về lỗi', ['response' => $response]);
+                Log::warning('⚠️ Không thể tải danh sách bài đăng', ['response' => $response]);
                 return view('public.listing', [
                     'data' => [],
                     'meta' => null,
@@ -846,18 +856,24 @@ class PublicController extends Controller
     public function detail($id)
     {
         try {
-            $response = $this->api->get("bai-dang/{$id}");
-
-            if (!isset($response['status']) || !$response['status']) {
-                Log::warning("⚠️ Bài đăng không tồn tại hoặc đã bị ẩn (ID={$id})", ['response' => $response]);
-                abort(404, $response['message'] ?? 'Không tìm thấy bài đăng này.');
+            $item = null;
+            try {
+                $response = $this->api->get("bai-dang/{$id}");
+                if (isset($response['status']) && $response['status'] && !empty($response['data'])) {
+                    $item = $response['data'];
+                }
+            } catch (\Throwable $apiEx) {
+                Log::debug("ApiClient /bai-dang/{$id} không khả dụng, sử dụng Direct Database: " . $apiEx->getMessage());
             }
 
-            $item = $response['data'] ?? null;
+            if (!$item) {
+                $item = $this->queryDirectDetail($id);
+            }
 
             if (!$item) {
                 abort(404, 'Không tìm thấy dữ liệu bài đăng.');
             }
+
             // Tải danh sách phòng trọ tương tự để hiển thị gợi ý
             $similarPosts = [];
             try {
@@ -872,8 +888,276 @@ class PublicController extends Controller
 
             return view('public.detail', compact('item', 'similarPosts'));
         } catch (\Throwable $e) {
-            Log::error("❌ Lỗi khi gọi API /bai-dang/{$id}", ['error' => $e->getMessage()]);
-            abort(500, 'Có lỗi xảy ra khi tải thông tin bài đăng.');
+            Log::error("❌ Lỗi khi tải chi tiết bài đăng /bai-dang/{$id}", ['error' => $e->getMessage()]);
+            try {
+                $item = $this->queryDirectDetail($id);
+                if ($item) {
+                    $similarPosts = array_slice($this->loadLatestPosts(4), 0, 4);
+                    return view('public.detail', compact('item', 'similarPosts'));
+                }
+            } catch (\Throwable $__e) {}
+            abort(404, 'Có lỗi xảy ra khi tải thông tin bài đăng hoặc bài đăng không tồn tại.');
+        }
+    }
+
+    /**
+     * Truy vấn danh sách bài đăng trực tiếp từ cơ sở dữ liệu (TiDB Cloud)
+     */
+    private function queryDirectListings(Request $request): array
+    {
+        try {
+            $query = DB::table('bai_dang as bd')
+                ->join('phong as p', 'p.id', '=', 'bd.phong_id')
+                ->join('day_tro as d', 'd.id', '=', 'p.day_tro_id')
+                ->join('nguoi_dung as nd', 'nd.id', '=', 'd.chu_tro_id')
+                ->where('bd.trang_thai', 'dang')
+                ->where('p.trang_thai', '<>', 'bao_tri')
+                ->select(
+                    'bd.id',
+                    'bd.tieu_de',
+                    'bd.mo_ta',
+                    'bd.gia_niem_yet',
+                    'bd.ngay_tao',
+                    'bd.ngay_cap_nhat',
+                    'p.id as phong_id',
+                    'p.so_phong',
+                    'p.dien_tich',
+                    'p.tang',
+                    'p.suc_chua',
+                    'p.trang_thai as trang_thai_phong',
+                    'd.ten_day_tro',
+                    'd.dia_chi',
+                    'd.tien_ich',
+                    'nd.ho_ten as chu_tro',
+                    'nd.so_dien_thoai as sdt_chu_tro'
+                );
+
+            if ($request->filled('search')) {
+                $kw = '%' . trim($request->search) . '%';
+                $query->where(function ($q) use ($kw) {
+                    $q->where('bd.tieu_de', 'like', $kw)
+                        ->orWhere('d.dia_chi', 'like', $kw)
+                        ->orWhere('d.ten_day_tro', 'like', $kw);
+                });
+            }
+
+            if ($request->filled('dia_chi') || $request->filled('area')) {
+                $addr = trim($request->input('dia_chi') ?: $request->input('area'));
+                $query->where(function ($q) use ($addr) {
+                    $q->where('d.dia_chi', 'like', "%{$addr}%")
+                        ->orWhere('bd.tieu_de', 'like', "%{$addr}%");
+                });
+            }
+
+            // Lọc theo danh mục bài đăng (Categories)
+            if ($request->filled('category')) {
+                $cat = trim($request->category);
+                if ($cat === 'sinh_vien') {
+                    $query->where(function ($q) {
+                        $q->where('bd.tieu_de', 'like', '%sinh viên%')
+                          ->orWhere('bd.tieu_de', 'like', '%trọ sinh viên%')
+                          ->orWhere('bd.gia_niem_yet', '<=', 3500000);
+                    });
+                } elseif ($cat === 'studio') {
+                    $query->where(function ($q) {
+                        $q->where('bd.tieu_de', 'like', '%studio%')
+                          ->orWhere('bd.tieu_de', 'like', '%mini%')
+                          ->orWhere('bd.tieu_de', 'like', '%căn hộ%');
+                    });
+                } elseif ($cat === 'o_ghep') {
+                    $query->where(function ($q) {
+                        $q->where('bd.tieu_de', 'like', '%ở ghép%')
+                          ->orWhere('bd.tieu_de', 'like', '%tìm bạn%')
+                          ->orWhere('bd.tieu_de', 'like', '%ghép%');
+                    });
+                } elseif ($cat === 'sleepbox') {
+                    $query->where(function ($q) {
+                        $q->where('bd.tieu_de', 'like', '%sleepbox%')
+                          ->orWhere('bd.tieu_de', 'like', '%ký túc xá%')
+                          ->orWhere('bd.tieu_de', 'like', '%ktx%');
+                    });
+                } elseif ($cat === 'nguyen_can') {
+                    $query->where(function ($q) {
+                        $q->where('bd.tieu_de', 'like', '%nguyên căn%')
+                          ->orWhere('bd.tieu_de', 'like', '%nhà riêng%');
+                    });
+                } elseif ($cat === 'smart_home') {
+                    $query->where(function ($q) {
+                        $q->where('bd.tieu_de', 'like', '%smart%')
+                          ->orWhere('bd.tieu_de', 'like', '%thông minh%')
+                          ->orWhere('bd.tieu_de', 'like', '%vân tay%');
+                    });
+                }
+            }
+
+            // Lọc theo quận / huyện
+            if ($request->filled('district')) {
+                $dist = trim($request->district);
+                $query->where(function ($q) use ($dist) {
+                    $q->where('d.dia_chi', 'like', "%{$dist}%")
+                      ->orWhere('bd.tieu_de', 'like', "%{$dist}%");
+                });
+            }
+
+            if ($request->filled('min')) {
+                $query->where('bd.gia_niem_yet', '>=', floatval($request->min));
+            }
+            if ($request->filled('max')) {
+                $query->where('bd.gia_niem_yet', '<=', floatval($request->max));
+            }
+
+            switch ($request->input('sort')) {
+                case 'desc':
+                    $query->orderBy('bd.gia_niem_yet', 'desc');
+                    break;
+                case 'newest':
+                    $query->orderByDesc(DB::raw('COALESCE(bd.ngay_cap_nhat, bd.ngay_tao)'));
+                    break;
+                case 'area':
+                    $query->orderBy('p.dien_tich', 'desc');
+                    break;
+                default:
+                    $query->orderBy('bd.gia_niem_yet', 'asc');
+                    break;
+            }
+
+            $perPage = 12;
+            $paginator = $query->paginate($perPage)->withQueryString();
+
+            $ids = $paginator->pluck('id')->toArray();
+
+            $anhMap = DB::table('anh_bai_dang')
+                ->select('bai_dang_id', 'url')
+                ->whereIn('bai_dang_id', $ids)
+                ->orderBy('thu_tu')
+                ->get()
+                ->groupBy('bai_dang_id')
+                ->map(fn($list) => $list->first()->url ?? null);
+
+            $ratingMap = DB::table('danh_gia as dg')
+                ->join('hop_dong as hd', 'hd.id', '=', 'dg.hop_dong_id')
+                ->join('phong as p', 'p.id', '=', 'hd.phong_id')
+                ->join('bai_dang as bd', 'bd.phong_id', '=', 'p.id')
+                ->select('bd.id as bai_dang_id', DB::raw('ROUND(AVG(dg.diem_so), 1) as rating'))
+                ->whereIn('bd.id', $ids)
+                ->groupBy('bd.id')
+                ->pluck('rating', 'bai_dang_id');
+
+            $items = $paginator->getCollection()->transform(function ($item) use ($anhMap, $ratingMap) {
+                $anhUrl = $anhMap->get($item->id);
+                $item->anh_dai_dien = $anhUrl
+                    ? (str_starts_with($anhUrl, 'http') ? $anhUrl : asset('storage/' . ltrim($anhUrl, '/')))
+                    : asset('upload/room1.jpg');
+
+                $item->rating = $ratingMap->get($item->id) ?: 4.8;
+                $item->gia_hien_thi = number_format($item->gia_niem_yet, 0, ',', '.') . ' đ/tháng';
+                $item->ngay_hien_thi = date('d/m/Y', strtotime($item->ngay_tao ?? 'now'));
+                $item->trang_thai_text = 'Trống';
+
+                return (array) $item;
+            })->toArray();
+
+            return [
+                'status' => true,
+                'message' => 'Danh sách bài đăng phòng trống',
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'total' => $paginator->total(),
+                    'per_page' => $paginator->perPage(),
+                ],
+            ];
+        } catch (\Throwable $e) {
+            Log::error('queryDirectListings failed: ' . $e->getMessage());
+            return ['status' => false, 'message' => $e->getMessage(), 'data' => []];
+        }
+    }
+
+    /**
+     * Truy vấn chi tiết bài đăng trực tiếp từ cơ sở dữ liệu (TiDB Cloud)
+     */
+    private function queryDirectDetail($id): ?array
+    {
+        try {
+            $baiDang = DB::table('bai_dang as bd')
+                ->join('phong as p', 'p.id', '=', 'bd.phong_id')
+                ->join('day_tro as d', 'd.id', '=', 'p.day_tro_id')
+                ->join('nguoi_dung as nd', 'nd.id', '=', 'd.chu_tro_id')
+                ->select(
+                    'bd.*',
+                    'p.id as phong_id',
+                    'p.so_phong',
+                    'p.dien_tich',
+                    'p.tang',
+                    'p.suc_chua',
+                    'p.trang_thai as trang_thai_phong',
+                    'd.id as day_tro_id',
+                    'd.ten_day_tro',
+                    'd.dia_chi',
+                    'd.tien_ich',
+                    'nd.ho_ten as chu_tro',
+                    'nd.so_dien_thoai as sdt_chu_tro'
+                )
+                ->where('bd.id', $id)
+                ->where('bd.trang_thai', 'dang')
+                ->first();
+
+            if (!$baiDang) {
+                return null;
+            }
+
+            $item = (array) $baiDang;
+
+            // Ảnh bài đăng
+            $images = DB::table('anh_bai_dang')
+                ->where('bai_dang_id', $id)
+                ->orderBy('thu_tu')
+                ->pluck('url')
+                ->map(function ($u) {
+                    if (str_starts_with($u, 'http')) return $u;
+                    return asset('storage/' . ltrim($u, '/'));
+                })
+                ->toArray();
+
+            if (empty($images)) {
+                $images = [asset('upload/room1.jpg')];
+            }
+
+            $item['anh'] = $images;
+            $item['anh_dai_dien'] = $images[0] ?? asset('upload/room1.jpg');
+            $item['gia_hien_thi'] = number_format($item['gia_niem_yet'] ?? 0, 0, ',', '.') . ' đ/tháng';
+            $item['ngay_hien_thi'] = date('d/m/Y', strtotime($item['ngay_tao'] ?? 'now'));
+
+            // Đánh giá
+            $danhGia = DB::table('danh_gia as dg')
+                ->join('hop_dong as hd', 'hd.id', '=', 'dg.hop_dong_id')
+                ->join('nguoi_dung as nd', 'nd.id', '=', 'dg.nguoi_dung_id')
+                ->where('hd.phong_id', $item['phong_id'])
+                ->select('dg.*', 'nd.ho_ten', 'nd.anh_dai_dien')
+                ->orderBy('dg.ngay_danh_gia', 'desc')
+                ->get()
+                ->map(fn($r) => (array) $r)
+                ->toArray();
+
+            $item['danh_gia'] = $danhGia;
+            $item['rating'] = !empty($danhGia) ? round(collect($danhGia)->avg('diem_so'), 1) : 4.8;
+            $item['danh_gia_count'] = count($danhGia);
+
+            // Dịch vụ của dãy trọ
+            $dichVu = DB::table('dich_vu_day_tro as dvdt')
+                ->join('dich_vu as dv', 'dv.id', '=', 'dvdt.dich_vu_id')
+                ->where('dvdt.day_tro_id', $item['day_tro_id'] ?? 0)
+                ->select('dv.ten_dich_vu', 'dvdt.gia', 'dvdt.don_vi_tinh')
+                ->get()
+                ->map(fn($r) => (array) $r)
+                ->toArray();
+            $item['dich_vu'] = $dichVu;
+
+            return $item;
+        } catch (\Throwable $e) {
+            Log::error("queryDirectDetail($id) error: " . $e->getMessage());
+            return null;
         }
     }
 }
