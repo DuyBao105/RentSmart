@@ -152,11 +152,11 @@ document.addEventListener('show-chutro', function(e) {
            x-data="{
              activeSlide: 0,
              slides: [
-               { img: '{{ asset('upload/room_real_22.jpg') }}', title: 'Studio cao cấp Full nội thất', price: '3.200.000đ', location: 'Q. Bình Thạnh', tag: 'Studio cao cấp', stats: '25m² • Có ban công' },
-               { img: '{{ asset('upload/room_real_7.jpg') }}', title: 'Căn hộ mini ban công thoáng', price: '3.800.000đ', location: 'Q. Phú Nhuận', tag: 'Căn hộ mini', stats: '30m² • Cửa sổ lớn' },
-               { img: '{{ asset('upload/room_real_3.jpg') }}', title: 'Phòng trọ gác cao ráo sinh viên', price: '2.400.000đ', location: 'TP. Thủ Đức', tag: 'Trọ sinh viên', stats: '20m² • Gần ĐHQG' },
-               { img: '{{ asset('upload/room_real_14.jpg') }}', title: 'Căn hộ dịch vụ Smart Home', price: '4.200.000đ', location: 'Quận 10', tag: 'Smart Home', stats: '35m² • Khóa vân tay' },
-               { img: '{{ asset('upload/room_real_10.jpg') }}', title: 'Phòng đôi đón ánh sáng tự nhiên', price: '2.900.000đ', location: 'Q. Gò Vấp', tag: 'Phòng đôi', stats: '24m² • Nội thất gỗ' }
+               { img: '{{ asset('upload/room_real_22.jpg') }}', title: 'Studio cao cấp Full nội thất', price: '3.200.000đ', location: 'Q. Bình Thạnh', tag: 'Studio cao cấp', stats: '25m² • Có ban công', url: '{{ route('listing', ['category' => 'studio']) }}' },
+               { img: '{{ asset('upload/room_real_7.jpg') }}', title: 'Căn hộ mini ban công thoáng', price: '3.800.000đ', location: 'Q. Phú Nhuận', tag: 'Căn hộ mini', stats: '30m² • Cửa sổ lớn', url: '{{ route('listing', ['dia_chi' => 'Phú Nhuận']) }}' },
+               { img: '{{ asset('upload/room_real_3.jpg') }}', title: 'Phòng trọ gác cao ráo sinh viên', price: '2.400.000đ', location: 'TP. Thủ Đức', tag: 'Trọ sinh viên', stats: '20m² • Gần ĐHQG', url: '{{ route('listing', ['category' => 'sinh_vien']) }}' },
+               { img: '{{ asset('upload/room_real_14.jpg') }}', title: 'Căn hộ dịch vụ Smart Home', price: '4.200.000đ', location: 'Quận 10', tag: 'Smart Home', stats: '35m² • Khóa vân tay', url: '{{ route('listing', ['dia_chi' => 'Quận 10']) }}' },
+               { img: '{{ asset('upload/room_real_10.jpg') }}', title: 'Phòng đôi đón ánh sáng tự nhiên', price: '2.900.000đ', location: 'Q. Gò Vấp', tag: 'Phòng đôi', stats: '24m² • Nội thất gỗ', url: '{{ route('listing', ['dia_chi' => 'Gò Vấp']) }}' }
              ],
              timer: null,
              start() {
@@ -191,23 +191,27 @@ document.addEventListener('show-chutro', function(e) {
             
             {{-- Carousel Slides with Smooth Crossfade --}}
             <template x-for="(slide, index) in slides" :key="index">
-              <div x-show="activeSlide === index"
-                   x-transition:enter="transition-all duration-700 ease-out"
-                   x-transition:enter-start="opacity-0 scale-102"
-                   x-transition:enter-end="opacity-100 scale-100"
-                   x-transition:leave="transition-opacity duration-500 ease-in"
-                   x-transition:leave-start="opacity-100"
-                   x-transition:leave-end="opacity-0"
-                   class="absolute inset-0 w-full h-full">
+              <a :href="slide.url || '{{ route('listing') }}'"
+                 :title="'Khám phá ' + slide.title"
+                 x-show="activeSlide === index"
+                 x-transition:enter="transition-all duration-700 ease-out"
+                 x-transition:enter-start="opacity-0 scale-102"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition-opacity duration-500 ease-in"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="absolute inset-0 w-full h-full block cursor-pointer">
                 <img :src="slide.img"
                      :alt="slide.title"
                      class="w-full h-full object-cover">
-              </div>
+              </a>
             </template>
 
             {{-- Fallback image for no-js --}}
             <noscript>
-              <img src="{{ asset('upload/room_real_22.jpg') }}" alt="Phòng trọ thực tế" class="w-full h-full object-cover">
+              <a href="{{ route('listing') }}">
+                <img src="{{ asset('upload/room_real_22.jpg') }}" alt="Phòng trọ thực tế" class="w-full h-full object-cover">
+              </a>
             </noscript>
 
             {{-- Soft lighting vignette --}}
@@ -215,7 +219,7 @@ document.addEventListener('show-chutro', function(e) {
 
             {{-- Top Right: Photo badge & Interactive slide dots --}}
             <div class="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 dark:bg-[#172B3A]/90 backdrop-blur-md text-[11px] font-semibold text-[#172B3A] dark:text-white shadow-sm border border-white/40">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 dark:bg-[#172B3A]/90 backdrop-blur-md text-[11px] font-semibold text-[#172B3A] dark:text-white shadow-sm border border-white/40 pointer-events-none">
                 <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse"></span>
                 <span>Ảnh thực tế 100%</span>
               </span>
@@ -224,21 +228,21 @@ document.addEventListener('show-chutro', function(e) {
               <div class="flex items-center gap-1 bg-black/45 backdrop-blur-md px-2 py-1.5 rounded-full border border-white/20">
                 <template x-for="(s, idx) in slides" :key="idx">
                   <button type="button"
-                          @click="goTo(idx)"
+                          @click.stop="goTo(idx)"
                           :class="activeSlide === idx ? 'w-3.5 bg-[#0D9488]' : 'w-1.5 bg-white/60 hover:bg-white'"
-                          class="h-1.5 rounded-full transition-all duration-300"
+                          class="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
                           :aria-label="'Ảnh ' + (idx + 1)"></button>
                 </template>
               </div>
             </div>
 
             {{-- Subtle Prev / Next arrow buttons (revealed on hover) --}}
-            <button type="button" @click="prev()" aria-label="Xem ảnh trước"
-                    class="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/30 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <button type="button" @click.stop="prev()" aria-label="Xem ảnh trước"
+                    class="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/30 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
               <i class="ri-arrow-left-s-line text-lg" aria-hidden="true"></i>
             </button>
-            <button type="button" @click="next()" aria-label="Xem ảnh kế tiếp"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/30 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <button type="button" @click.stop="next()" aria-label="Xem ảnh kế tiếp"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/30 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
               <i class="ri-arrow-right-s-line text-lg" aria-hidden="true"></i>
             </button>
 
@@ -252,13 +256,15 @@ document.addEventListener('show-chutro', function(e) {
         </div>
 
         {{-- 🪟 CARD 1: DYNAMIC PROPERTY INFO PILL (Top-Left Offset, Streamlined) --}}
-        <div class="absolute -top-3.5 -left-3 sm:-left-5 z-20 bg-white/95 dark:bg-[#181B19]/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/90 dark:border-slate-700/80 shadow-lg shadow-slate-900/10 flex items-center gap-2.5 max-w-[270px] animate-float-card-1 card-lift-hover">
-          <div class="w-8 h-8 rounded-lg bg-[#ECFDF8] dark:bg-[#134E4A]/40 text-[#0D9488] dark:text-[#5EEAD4] flex items-center justify-center text-base shrink-0">
+        <a :href="slides[activeSlide].url || '{{ route('listing') }}'"
+           class="absolute -top-3.5 -left-3 sm:-left-5 z-20 bg-white/95 dark:bg-[#181B19]/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/90 dark:border-slate-700/80 shadow-lg shadow-slate-900/10 flex items-center gap-2.5 max-w-[270px] animate-float-card-1 card-lift-hover cursor-pointer group/pill"
+           :title="'Khám phá ' + slides[activeSlide].title">
+          <div class="w-8 h-8 rounded-lg bg-[#ECFDF8] dark:bg-[#134E4A]/40 text-[#0D9488] dark:text-[#5EEAD4] flex items-center justify-center text-base shrink-0 group-hover/pill:scale-110 transition-transform">
             <i class="ri-home-smile-fill" aria-hidden="true"></i>
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-1">
-              <span class="text-xs font-bold text-[#172B3A] dark:text-white truncate" x-text="slides[activeSlide].title"></span>
+              <span class="text-xs font-bold text-[#172B3A] dark:text-white truncate group-hover/pill:text-[#0D9488] transition-colors" x-text="slides[activeSlide].title"></span>
             </div>
             <div class="flex items-center gap-1.5 text-[11px] text-[#64748B] dark:text-slate-400">
               <span class="font-extrabold text-[#0D9488] dark:text-[#2DD4BF]" x-text="slides[activeSlide].price + '/tháng'"></span>
@@ -266,15 +272,17 @@ document.addEventListener('show-chutro', function(e) {
               <span class="truncate" x-text="slides[activeSlide].location"></span>
             </div>
           </div>
-        </div>
+        </a>
 
         {{-- 🎯 CARD 2: SMART MATCH BADGE (Top-Right Floating Tag) --}}
-        <div class="hidden sm:flex absolute top-14 -right-2 sm:-right-4 z-20 bg-white/95 dark:bg-[#181B19]/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/90 dark:border-slate-700/80 shadow-lg shadow-slate-900/10 items-center gap-1.5 animate-float-card-2 card-lift-hover">
-          <i class="ri-sparkling-fill text-[#0D9488] dark:text-[#5EEAD4] text-xs" aria-hidden="true"></i>
+        <a href="{{ route('listing', ['max' => 3500000]) }}"
+           class="hidden sm:flex absolute top-14 -right-2 sm:-right-4 z-20 bg-white/95 dark:bg-[#181B19]/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/90 dark:border-slate-700/80 shadow-lg shadow-slate-900/10 items-center gap-1.5 animate-float-card-2 card-lift-hover cursor-pointer group/match"
+           title="Khám phá phòng trọ phù hợp ngân sách">
+          <i class="ri-sparkling-fill text-[#0D9488] dark:text-[#5EEAD4] text-xs group-hover/match:scale-125 transition-transform" aria-hidden="true"></i>
           <span class="text-[11px] font-semibold text-[#172B3A] dark:text-white whitespace-nowrap">
             Gợi ý phù hợp: <span class="text-[#0D9488] dark:text-[#5EEAD4] font-bold">&lt; 3.5tr • Full nội thất</span>
           </span>
-        </div>
+        </a>
 
         {{-- 📊 CARD 3: SLEEK LANDLORD STATUS DOCK (Bottom Edge, Low Profile) --}}
         <div class="absolute -bottom-3.5 left-1/2 -translate-x-1/2 z-20 bg-white/95 dark:bg-[#181B19]/95 backdrop-blur-md px-4 py-2 rounded-xl border border-white/90 dark:border-slate-700/80 shadow-xl shadow-slate-900/12 flex items-center gap-3 sm:gap-4 whitespace-nowrap animate-float-card-3 card-lift-hover w-[92%] sm:w-auto justify-between sm:justify-start">
@@ -869,19 +877,23 @@ document.addEventListener('show-chutro', function(e) {
                x-transition:enter-end="opacity-100 transform translate-y-0"
                class="group card-lift-hover bg-white dark:bg-[#181B19] border border-[#E2E8F0] dark:border-[#282D2A] hover:border-[#0D9488] dark:hover:border-[#5EEAD4] shadow-xs hover:shadow-xl hover:shadow-teal-950/10 transition-all duration-300 rounded-2xl flex flex-col h-full overflow-hidden">
 
-            {{-- 🖼 Image Container (Aspect Ratio 16:10) --}}
+            {{-- 🖼 Image Link Container (Aspect Ratio 16:10) --}}
             <div class="relative aspect-[16/10] w-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-              <img :src="item.anh_dai_dien || '{{ asset('upload/room1.jpg') }}'"
-                   :onerror="`this.src='{{ asset('upload/room1.jpg') }}'`"
-                   :alt="item.tieu_de || item.title || 'Phòng trọ'"
-                   loading="lazy"
-                   class="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-103">
+              <a :href="'/bai-dang/' + (item.id || (idx+1))"
+                 :title="'Xem chi tiết ' + (item.tieu_de || item.title || 'phòng trọ')"
+                 class="block w-full h-full cursor-pointer group/img">
+                <img :src="item.anh_dai_dien || '{{ asset('upload/room1.jpg') }}'"
+                     :onerror="`this.src='{{ asset('upload/room1.jpg') }}'`"
+                     :alt="item.tieu_de || item.title || 'Phòng trọ'"
+                     loading="lazy"
+                     class="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-103">
 
-              {{-- Soft Gradient Vignette --}}
-              <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none"></div>
+                {{-- Soft Gradient Vignette --}}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none"></div>
+              </a>
 
               {{-- Top Badges: Room Number & Verification --}}
-              <div class="absolute top-3 left-3 z-10 flex items-center gap-1.5">
+              <div class="absolute top-3 left-3 z-10 flex items-center gap-1.5 pointer-events-none">
                 <span class="bg-[#172B3A]/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white tracking-wide border border-white/10 shadow-xs">
                   P.<span x-text="item.so_phong || (idx + 1)"></span>
                 </span>
@@ -894,13 +906,13 @@ document.addEventListener('show-chutro', function(e) {
               {{-- Favorite Heart Toggle Button --}}
               <button type="button"
                       @click.stop="toggleFav(item.id || idx)"
-                      class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/95 dark:bg-[#172B3A]/95 backdrop-blur-md shadow-sm border border-white/40 flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
+                      class="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/95 dark:bg-[#172B3A]/95 backdrop-blur-md shadow-sm border border-white/40 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 cursor-pointer"
                       :aria-label="isFav(item.id || idx) ? 'Bỏ lưu yêu thích' : 'Lưu vào danh sách yêu thích'">
                 <i :class="isFav(item.id || idx) ? 'ri-heart-3-fill text-rose-500' : 'ri-heart-3-line text-[#64748B] hover:text-rose-500'" class="text-sm transition-colors"></i>
               </button>
 
               {{-- Availability Indicator Pill --}}
-              <div class="absolute bottom-3 left-3 z-10">
+              <div class="absolute bottom-3 left-3 z-10 pointer-events-none">
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[11px] text-white font-medium border border-white/15">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   <span>Còn phòng</span>
@@ -912,10 +924,10 @@ document.addEventListener('show-chutro', function(e) {
             <div class="p-5 grow flex flex-col justify-between space-y-4">
               <div>
                 {{-- Location --}}
-                <div class="flex items-center text-[#64748B] dark:text-[#A7AAA4] text-xs mb-1.5 font-medium">
+                <a :href="'/bai-dang/' + (item.id || (idx+1))" class="flex items-center text-[#64748B] dark:text-[#A7AAA4] text-xs mb-1.5 font-medium hover:text-[#0D9488] dark:hover:text-[#5EEAD4] transition-colors">
                   <i class="ri-map-pin-2-fill text-[#0D9488] mr-1.5 text-sm shrink-0"></i>
                   <span class="truncate" x-text="item.dia_chi || 'TP. Hồ Chí Minh'"></span>
-                </div>
+                </a>
 
                 {{-- Property Title --}}
                 <a :href="'/bai-dang/' + (item.id || (idx+1))" class="block group/title">
@@ -925,7 +937,7 @@ document.addEventListener('show-chutro', function(e) {
                 </a>
 
                 {{-- Room Specs: Area, Capacity, Policy --}}
-                <div class="flex items-center gap-3 text-xs text-[#64748B] dark:text-[#A7AAA4] font-medium mt-3 pt-3 border-t border-[#E2E8F0] dark:border-[#262B28]">
+                <a :href="'/bai-dang/' + (item.id || (idx+1))" class="flex items-center gap-3 text-xs text-[#64748B] dark:text-[#A7AAA4] font-medium mt-3 pt-3 border-t border-[#E2E8F0] dark:border-[#262B28] hover:text-[#172B3A] dark:hover:text-white transition-colors">
                   <span class="flex items-center gap-1">
                     <i class="ri-ruler-2-line text-[#0D9488]"></i>
                     <span x-text="(item.dien_tich ? (item.dien_tich + ' m²') : '22 m²')"></span>
@@ -940,22 +952,22 @@ document.addEventListener('show-chutro', function(e) {
                     <i class="ri-shield-keyhole-line"></i>
                     <span>Tự do 24/7</span>
                   </span>
-                </div>
+                </a>
               </div>
 
               {{-- Price & CTA Container --}}
               <div class="pt-2">
                 <div class="flex items-baseline justify-between mb-3.5">
-                  <div>
+                  <a :href="'/bai-dang/' + (item.id || (idx+1))" class="block group/price cursor-pointer">
                     <span class="text-[10px] text-[#64748B] font-semibold uppercase tracking-wider block">Giá thuê tháng:</span>
                     <div class="flex items-baseline gap-1 mt-0.5">
-                      <span class="text-xl sm:text-2xl font-extrabold text-[#0D9488] dark:text-[#5EEAD4]"
+                      <span class="text-xl sm:text-2xl font-extrabold text-[#0D9488] dark:text-[#5EEAD4] group-hover/price:opacity-90"
                             x-text="item.gia_hien_thi || (Number(item.gia_niem_yet || 0).toLocaleString('vi-VN') + ' ₫')"></span>
                       <span class="text-xs text-[#64748B] font-normal">/tháng</span>
                     </div>
-                  </div>
+                  </a>
                   <a :href="'/bai-dang/' + (item.id || (idx+1))"
-                     class="micro-press inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-[#ECFDF8] dark:bg-[#134E4A]/30 hover:bg-[#0D9488] hover:text-white text-[#0D9488] dark:text-[#5EEAD4] font-bold text-xs border border-[#CCFBF1] dark:border-[#0D9488]/30 transition-all shadow-xs">
+                     class="micro-press inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-[#ECFDF8] dark:bg-[#134E4A]/30 hover:bg-[#0D9488] hover:text-white text-[#0D9488] dark:text-[#5EEAD4] font-bold text-xs border border-[#CCFBF1] dark:border-[#0D9488]/30 transition-all shadow-xs cursor-pointer">
                     <span>Xem phòng</span>
                     <i class="ri-arrow-right-line text-xs"></i>
                   </a>
@@ -963,12 +975,12 @@ document.addEventListener('show-chutro', function(e) {
 
                 {{-- Quick Contact Actions --}}
                 <div class="pt-3 border-t border-[#E2E8F0] dark:border-[#262B28] flex items-center justify-between text-xs text-[#64748B] dark:text-[#A7AAA4] font-medium">
-                  <button type="button" @click="$dispatch('show-chutro', {ten: item.chu_tro || 'Chủ trọ', sdt: item.sdt_chu_tro || '0909000002'})"
+                  <button type="button" @click.stop="$dispatch('show-chutro', {ten: item.chu_tro || 'Chủ trọ', sdt: item.sdt_chu_tro || '0909000002'})"
                     class="micro-press hover:text-[#0D9488] dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer">
                     <i class="ri-phone-fill text-[#0D9488] dark:text-[#5EEAD4]"></i>
                     <span>Gọi chủ trọ</span>
                   </button>
-                  <button type="button" @click="$dispatch('show-chutro', {ten: item.chu_tro || 'Chủ trọ', sdt: item.sdt_chu_tro || '0909000002'})"
+                  <button type="button" @click.stop="$dispatch('show-chutro', {ten: item.chu_tro || 'Chủ trọ', sdt: item.sdt_chu_tro || '0909000002'})"
                     class="micro-press hover:text-[#0D9488] dark:hover:text-white flex items-center gap-1 transition-colors cursor-pointer">
                     <i class="ri-chat-1-fill text-[#0D9488] dark:text-[#5EEAD4]"></i>
                     <span>Nhắn Zalo</span>

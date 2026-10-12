@@ -459,8 +459,12 @@
                 
                 {{-- Card Media --}}
                 <div class="relative aspect-[16/10] w-full bg-stone-200 overflow-hidden">
+                  <a href="{{ $detailUrl }}" class="block w-full h-full cursor-pointer" title="{{ $item['tieu_de'] ?? 'Xem chi tiết phòng trọ' }}">
+                    <img src="{{ $thumb }}" alt="{{ $item['tieu_de'] ?? 'Phòng trọ' }}" class="w-full h-full object-cover">
+                  </a>
+
                   {{-- Rank & Satisfaction Badge --}}
-                  <div class="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5">
+                  <div class="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 pointer-events-none">
                     @if($rankNum === 1)
                       <span class="bg-[#1B3D2F] text-white text-[11px] font-bold px-2.5 py-0.5 rounded shadow-sm border border-white/10 flex items-center gap-1">
                         <i class="ri-vip-crown-fill text-[#C5A574]"></i> #1 Khuyên dùng
@@ -476,11 +480,9 @@
                   </div>
 
                   {{-- Room Availability Chip --}}
-                  <span class="absolute top-2.5 right-2.5 z-10 bg-emerald-800/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded backdrop-blur-md">
+                  <span class="absolute top-2.5 right-2.5 z-10 bg-emerald-800/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded backdrop-blur-md pointer-events-none">
                     Phòng trống
                   </span>
-
-                  <img src="{{ $thumb }}" alt="{{ $item['tieu_de'] ?? 'Phòng trọ' }}" class="w-full h-full object-cover">
                 </div>
 
                 {{-- Card Content --}}
@@ -626,17 +628,19 @@
 
               {{-- 🖼 Picture Container --}}
               <div class="relative h-56 w-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
-                @if(!empty($item['anh_dai_dien']))
-                  <img src="{{ $item['anh_dai_dien'] }}" alt="{{ $item['tieu_de'] }}"
-                       class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-104">
-                @else
-                  <div class="w-full h-full flex items-center justify-center bg-stone-100 dark:bg-stone-800 text-stone-400 text-xs">
-                    Chưa có ảnh thực tế
-                  </div>
-                @endif
+                <a href="{{ url('/bai-dang/' . $item['id']) }}" class="block w-full h-full cursor-pointer" title="{{ $item['tieu_de'] }}">
+                  @if(!empty($item['anh_dai_dien']))
+                    <img src="{{ $item['anh_dai_dien'] }}" alt="{{ $item['tieu_de'] }}"
+                         class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-104">
+                  @else
+                    <div class="w-full h-full flex items-center justify-center bg-stone-100 dark:bg-stone-800 text-stone-400 text-xs">
+                      Chưa có ảnh thực tế
+                    </div>
+                  @endif
+                </a>
 
                 {{-- Status Badges --}}
-                <div class="absolute top-3 left-3 z-10 flex items-center gap-1.5">
+                <div class="absolute top-3 left-3 z-10 flex items-center gap-1.5 pointer-events-none">
                   <span class="bg-[#171A19]/90 backdrop-blur-md px-2.5 py-0.5 rounded text-[11px] font-semibold text-white tracking-wide border border-white/10">
                     P.{{ $item['so_phong'] ?? ($loop->iteration) }}
                   </span>
@@ -646,7 +650,7 @@
                 </div>
 
                 {{-- Availability Indicator --}}
-                <div class="absolute bottom-3 left-3 z-10">
+                <div class="absolute bottom-3 left-3 z-10 pointer-events-none">
                   <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-[#171A19]/80 backdrop-blur-md text-[11px] text-white font-medium border border-white/10">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                     <span>Còn phòng</span>
