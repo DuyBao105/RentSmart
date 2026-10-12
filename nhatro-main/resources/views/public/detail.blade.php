@@ -329,9 +329,9 @@
                                 @if(!empty($item['dich_vu']) && count($item['dich_vu']) > 0)
                                     @foreach($item['dich_vu'] as $dv)
                                         <tr>
-                                            <td class="py-2.5 px-3.5 font-medium text-[#171A19] dark:text-white">{{ $dv['ten'] }}</td>
-                                            <td class="py-2.5 px-3.5 font-bold text-[#171A19] dark:text-white">{{ number_format($dv['gia'], 0, ',', '.') }} ₫</td>
-                                            <td class="py-2.5 px-3.5 text-[#85877F]">{{ $dv['don_vi'] }}</td>
+                                            <td class="py-2.5 px-3.5 font-medium text-[#171A19] dark:text-white">{{ $dv['ten'] ?? $dv['ten_dich_vu'] ?? 'Dịch vụ' }}</td>
+                                            <td class="py-2.5 px-3.5 font-bold text-[#171A19] dark:text-white">{{ number_format($dv['gia'] ?? $dv['don_gia'] ?? 0, 0, ',', '.') }} ₫</td>
+                                            <td class="py-2.5 px-3.5 text-[#85877F]">{{ $dv['don_vi'] ?? $dv['don_vi_tinh'] ?? '' }}</td>
                                             <td class="py-2.5 px-3.5 text-[#70746F] hidden sm:table-cell">Theo chỉ số thực tế</td>
                                         </tr>
                                     @endforeach

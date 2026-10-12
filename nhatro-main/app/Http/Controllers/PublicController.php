@@ -865,6 +865,8 @@ class PublicController extends Controller
             }
 
             return view('public.detail', compact('item', 'similarPosts'));
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $httpEx) {
+            throw $httpEx;
         } catch (\Throwable $e) {
             Log::error("❌ Lỗi khi tải chi tiết bài đăng /bai-dang/{$id}", ['error' => $e->getMessage()]);
             try {
@@ -1155,7 +1157,7 @@ class PublicController extends Controller
             try {
                 $dichVu = DB::table('dich_vu')
                     ->where('chu_tro_id', $item['chu_tro_id'] ?? 2)
-                    ->select('ten as ten_dich_vu', 'don_gia as gia', 'don_vi as don_vi_tinh')
+                    ->select('ten', 'ten as ten_dich_vu', 'don_gia as gia', 'don_vi', 'don_vi as don_vi_tinh')
                     ->get()
                     ->map(fn($r) => (array) $r)
                     ->toArray();
