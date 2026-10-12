@@ -874,27 +874,49 @@
         </div>
     </div>
 
-    {{-- 🔍 FULLSCREEN LIGHTBOX MODAL --}}
-    <div id="lightboxModal" class="hidden modal-backdrop-animate fixed inset-0 z-50 bg-[#121514]/95 backdrop-blur-md flex items-center justify-center p-4">
-        <button type="button" onclick="closeLightbox()"
-            class="micro-press absolute top-5 right-5 z-20 w-10 h-10 rounded-md bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl transition">
-            <i class="ri-close-line"></i>
-        </button>
+    {{-- 🔍 FULLSCREEN LIGHTBOX MODAL (PORTALED TO BODY) --}}
+    <div id="lightboxModal" class="hidden fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 select-none" onclick="if(event.target === this) closeLightbox()">
+        {{-- Top Bar --}}
+        <div class="w-full flex items-center justify-between z-20 text-white/90 px-2 py-1 max-w-6xl">
+            <div id="lightboxCaption" class="text-xs sm:text-sm font-semibold tracking-wide bg-white/10 px-3.5 py-1 rounded-full backdrop-blur-sm">
+                Ảnh 1 / {{ count($images) }}
+            </div>
+            <button type="button" onclick="closeLightbox()"
+                class="micro-press w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-2xl transition cursor-pointer"
+                title="Đóng (Esc)">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
 
-        <button type="button" onclick="prevLightbox(event)"
-            class="micro-press absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-md bg-white/10 hover:bg-white/25 text-white flex items-center justify-center text-xl transition">
-            <i class="ri-arrow-left-s-line"></i>
-        </button>
+        {{-- Main Stage & Navigation Arrows --}}
+        <div class="relative w-full flex-1 flex items-center justify-center max-w-6xl my-auto overflow-hidden">
+            <button type="button" onclick="prevLightbox(event)"
+                class="micro-press absolute left-2 sm:left-4 z-20 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center text-2xl transition shadow-lg backdrop-blur-sm cursor-pointer"
+                title="Ảnh trước (Mũi tên trái)">
+                <i class="ri-arrow-left-s-line"></i>
+            </button>
 
-        <button type="button" onclick="nextLightbox(event)"
-            class="micro-press absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-md bg-white/10 hover:bg-white/25 text-white flex items-center justify-center text-xl transition">
-            <i class="ri-arrow-right-s-line"></i>
-        </button>
+            <button type="button" onclick="nextLightbox(event)"
+                class="micro-press absolute right-2 sm:right-4 z-20 w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center text-2xl transition shadow-lg backdrop-blur-sm cursor-pointer"
+                title="Ảnh tiếp theo (Mũi tên phải)">
+                <i class="ri-arrow-right-s-line"></i>
+            </button>
 
-        <div class="modal-panel-animate relative max-w-5xl max-h-[85vh] flex flex-col items-center">
-            <img id="lightboxImg" src="" alt="Fullscreen image"
-                class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl">
-            <div id="lightboxCaption" class="mt-3 text-xs text-white/70 font-medium"></div>
+            <div class="relative max-w-full max-h-[75vh] flex items-center justify-center p-2">
+                <img id="lightboxImg" src="" alt="Fullscreen image"
+                    class="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl transition-all duration-300">
+            </div>
+        </div>
+
+        {{-- Bottom Thumbnail Strip --}}
+        <div class="w-full max-w-4xl z-20 flex items-center justify-center gap-2 py-2 overflow-x-auto">
+            @foreach($images as $idx => $imgUrl)
+                <button type="button" onclick="selectLightboxImage({{ $idx }})"
+                    class="lightbox-thumb-btn relative w-14 h-11 sm:w-16 sm:h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer {{ $idx === 0 ? 'border-white scale-105 opacity-100' : 'border-white/30 opacity-60 hover:opacity-90' }}"
+                    data-lb-idx="{{ $idx }}">
+                    <img src="{{ $imgUrl }}" class="w-full h-full object-cover" alt="Thumb {{ $idx + 1 }}">
+                </button>
+            @endforeach
         </div>
     </div>
 
@@ -959,39 +981,81 @@
     }
 
     // Lightbox Handlers
-    function openLightbox(idx) {
-        currentImageIndex = idx;
+    function ensureLightboxInBody() {
         const modal = document.getElementById('lightboxModal');
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+    }
+
+    function selectLightboxImage(idx) {
+        if (!galleryImages[idx]) return;
+        currentImageIndex = idx;
         const img = document.getElementById('lightboxImg');
         const caption = document.getElementById('lightboxCaption');
+        if (img) img.src = galleryImages[currentImageIndex];
+        if (caption) caption.textContent = `Ảnh ${currentImageIndex + 1} / ${galleryImages.length}`;
+
+        document.querySelectorAll('.lightbox-thumb-btn').forEach(btn => {
+            const btnIdx = parseInt(btn.dataset.lbIdx, 10);
+            if (btnIdx === idx) {
+                btn.classList.add('border-white', 'scale-105', 'opacity-100');
+                btn.classList.remove('border-white/30', 'opacity-60');
+            } else {
+                btn.classList.remove('border-white', 'scale-105', 'opacity-100');
+                btn.classList.add('border-white/30', 'opacity-60');
+            }
+        });
+    }
+
+    function openLightbox(idx) {
+        ensureLightboxInBody();
+        const modal = document.getElementById('lightboxModal');
+        const img = document.getElementById('lightboxImg');
         if (!modal || !img) return;
 
-        img.src = galleryImages[currentImageIndex] || '';
-        if (caption) caption.textContent = `Ảnh ${currentImageIndex + 1} / ${galleryImages.length}`;
+        selectLightboxImage(idx);
         modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeLightbox() {
         const modal = document.getElementById('lightboxModal');
         if (modal) modal.classList.add('hidden');
+        document.body.style.overflow = '';
     }
 
     function prevLightbox(e) {
         if (e) e.stopPropagation();
-        currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
-        const img = document.getElementById('lightboxImg');
-        const caption = document.getElementById('lightboxCaption');
-        if (img) img.src = galleryImages[currentImageIndex];
-        if (caption) caption.textContent = `Ảnh ${currentImageIndex + 1} / ${galleryImages.length}`;
+        const newIdx = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+        selectLightboxImage(newIdx);
     }
 
     function nextLightbox(e) {
         if (e) e.stopPropagation();
-        currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
-        const img = document.getElementById('lightboxImg');
-        const caption = document.getElementById('lightboxCaption');
-        if (img) img.src = galleryImages[currentImageIndex];
-        if (caption) caption.textContent = `Ảnh ${currentImageIndex + 1} / ${galleryImages.length}`;
+        const newIdx = (currentImageIndex + 1) % galleryImages.length;
+        selectLightboxImage(newIdx);
+    }
+
+    // Keyboard navigation (Esc, Left, Right)
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('lightboxModal');
+        if (!modal || modal.classList.contains('hidden')) return;
+
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowLeft') {
+            prevLightbox();
+        } else if (e.key === 'ArrowRight') {
+            nextLightbox();
+        }
+    });
+
+    // Auto-portal lightbox on load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureLightboxInBody);
+    } else {
+        ensureLightboxInBody();
     }
 
     // Quick Share Functionality
