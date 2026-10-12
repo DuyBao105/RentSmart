@@ -87,10 +87,7 @@ document.addEventListener('show-chutro', function(e) {
         {{-- Eyebrow badge --}}
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0FDFA] dark:bg-[#115E59]/30 border border-[#CCFBF1] dark:border-[#0D9488]/40 text-xs font-semibold text-[#0D9488] dark:text-[#5EEAD4] shadow-xs">
           <span class="w-2 h-2 rounded-full bg-[#0D9488] dark:bg-[#5EEAD4]"></span>
-          <span class="tracking-wide flex items-center gap-1">
-            <i class="ri-sparkling-fill text-[#0D9488] dark:text-[#5EEAD4]" aria-hidden="true"></i>
-            <span>Nền tảng quản lý nhà trọ thông minh</span>
-          </span>
+          <span class="tracking-wide">Nền tảng quản lý nhà trọ thông minh</span>
         </div>
 
         {{-- Main headline --}}

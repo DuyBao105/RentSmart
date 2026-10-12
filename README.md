@@ -73,7 +73,26 @@ Khác với các hệ thống gợi ý truyền thống (Collaborative Filtering
 
 ---
 
-## 🚀 4. Các Tính Năng Nổi Bật (Key Features)
+## 📸 4. Hình Ảnh Giao Diện & Trải Nghiệm Thực Tế (Screenshots)
+
+> **Mẹo:** Đặt ảnh chụp màn hình vào thư mục `docs/images/` với tên tương ứng để hiển thị trực tiếp trên GitHub:
+
+### 🤖 Phân Hệ Khách Thuê: Trợ Lý AI Gợi Ý Phòng
+<p align="center">
+  <img src="docs/images/ai_modal.png" alt="AI Suggestion Modal" width="48%" style="border-radius: 8px; border: 1px solid #ddd;" onerror="this.src='https://placehold.co/600x400?text=AI+Suggestion+Modal+(docs/images/ai_modal.png)'" />
+  <img src="docs/images/ai_results.png" alt="Top 3 AI Recommendations" width="48%" style="border-radius: 8px; border: 1px solid #ddd;" onerror="this.src='https://placehold.co/600x400?text=Top+3+Recommendations+(docs/images/ai_results.png)'" />
+</p>
+<p align="center"><i>(Trái: Modal cấu hình ràng buộc cứng & sở thích — Phải: Top 3 phòng tối ưu kèm điểm tương thích % và giải thích tiêu chí XAI)</i></p>
+
+### 🏢 Phân Hệ Chủ Trọ: Bảng Điều Khiển Quản Trị & Vận Hành
+<p align="center">
+  <img src="docs/images/landlord_dashboard.png" alt="Landlord Dashboard" width="96%" style="border-radius: 8px; border: 1px solid #ddd;" onerror="this.src='https://placehold.co/1000x500?text=Landlord+Dashboard+(docs/images/landlord_dashboard.png)'" />
+</p>
+<p align="center"><i>(Giám sát công suất lấp đầy phòng, trạng thái phòng trống/đã thuê và biểu đồ doanh thu theo thời gian thực)</i></p>
+
+---
+
+## 🚀 5. Các Tính Năng Nổi Bật (Key Features)
 
 ### 👤 Khách Thuê (Tenant)
 - 🔍 **Tìm kiếm & Lọc nâng cao:** Tra cứu phòng theo khoảng giá, diện tích, khu vực, tiện ích.
@@ -95,7 +114,7 @@ Khác với các hệ thống gợi ý truyền thống (Collaborative Filtering
 
 ---
 
-## 📂 5. Cấu Trúc Mã Nguồn (Directory Structure)
+## 📂 6. Cấu Trúc Mã Nguồn (Directory Structure)
 
 ```text
 Source_code/
@@ -115,7 +134,7 @@ Source_code/
 
 ---
 
-## 🛠️ 6. Hướng Dẫn Cài Đặt Local (Installation Guide)
+## 🛠️ 7. Hướng Dẫn Cài Đặt Local (Installation Guide)
 
 ### Yêu Cầu Môi Trường
 - **PHP** >= 8.2 (Khuyên dùng PHP 8.3)
@@ -169,7 +188,7 @@ composer install
 npm install
 npm run build
 php artisan key:generate
-# Cập nhật cấu hình DB và AI_ENGINE_URL=http://127.0.0.1:8002 trong .env
+# Cập nhật cấu hình DB và AI_RECOMMEND_ENDPOINT=http://127.0.0.1:8002/recommend_top3 trong .env
 php artisan serve --port=8001
 ```
 

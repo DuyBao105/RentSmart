@@ -1,9 +1,10 @@
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import torch
 import numpy as np
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-
 from db import load_posts, load_all_utilities, load_favorites
 from utils import (
     RoomEnv,
@@ -37,9 +38,14 @@ feature_dim = 8
 
 def refresh_data():
     global posts_df, posts_raw, utilities, rooms, env, model, feature_dim
-    posts_df = load_posts()
-    posts_raw = posts_df.to_dict(orient="records")
-    utilities = load_all_utilities()
+    try:
+        posts_df = load_posts()
+        posts_raw = posts_df.to_dict(orient="records")
+        utilities = load_all_utilities()
+    except Exception as e:
+        print(f"[AI Engine Warning] Chua ket noi duoc MySQL ({e}). Vui long bat MySQL/XAMPP.")
+        posts_raw = []
+        utilities = {}
 
     rooms = []
     for p in posts_raw:
@@ -56,13 +62,17 @@ def refresh_data():
 
     env = RoomEnv(rooms, utilities, [])
     feature_dim = env.feature_dim
+    room_count = max(len(rooms), 1)
 
     # Khởi tạo mô hình Dueling DQN với số chiều đặc trưng chuẩn hóa
-    model = DuelingDQN(state_size=len(rooms) * feature_dim, action_size=len(rooms), feature_dim=feature_dim)
+    model = DuelingDQN(state_size=room_count * feature_dim, action_size=room_count, feature_dim=feature_dim)
     model_path = os.path.join(os.path.dirname(__file__), "dqn_room.pt")
     if os.path.exists(model_path):
-        model.load_state_dict(torch.load(model_path, map_location="cpu"))
-        print("[AI Engine] Da nap trong so Dueling DQN tu dqn_room.pt")
+        try:
+            model.load_state_dict(torch.load(model_path, map_location="cpu"))
+            print("[AI Engine] Da nap trong so Dueling DQN tu dqn_room.pt thanh cong")
+        except Exception as err:
+            print(f"[AI Engine Warning] Loi nap weights dqn_room.pt: {err}")
     model.eval()
 
 refresh_data()

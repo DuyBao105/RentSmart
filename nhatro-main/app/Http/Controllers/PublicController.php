@@ -425,10 +425,8 @@ class PublicController extends Controller
         ];
 
         $query = $this->buildListingQuery($request, 'ai');
-        $endpoint = env('AI_RECOMMEND_ENDPOINT');
-        $hasExternalAi = !empty($endpoint)
-            && !str_contains($endpoint, '127.0.0.1')
-            && !str_contains($endpoint, 'localhost');
+        $endpoint = env('AI_RECOMMEND_ENDPOINT', 'http://127.0.0.1:8002/recommend_top3');
+        $hasExternalAi = !empty($endpoint);
 
         $recommendations = [];
         $isNoMatch = false;
