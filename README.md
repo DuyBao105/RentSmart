@@ -75,7 +75,6 @@ Khác với các hệ thống gợi ý truyền thống (Collaborative Filtering
 
 ## 📸 4. Hình Ảnh Giao Diện & Trải Nghiệm Thực Tế (Screenshots)
 
-> **Mẹo:** Đặt ảnh chụp màn hình vào thư mục `docs/images/` với tên tương ứng để hiển thị trực tiếp trên GitHub:
 
 ### 🤖 Phân Hệ Khách Thuê: Trợ Lý AI Gợi Ý Phòng
 <p align="center">
@@ -192,7 +191,7 @@ php artisan key:generate
 php artisan serve --port=8001
 ```
 
-👉 Truy cập hệ thống tại: **`http://127.0.0.1:8001`**
+👉 Truy cập hệ thống tại: **[`http://127.0.0.1:8001`](https://rentsmart-3jpu.onrender.com/)**
 
 ---
 
